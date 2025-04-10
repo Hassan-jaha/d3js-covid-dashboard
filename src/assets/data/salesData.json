@@ -1,0 +1,22 @@
+[
+  {"date": "2023-01-01", "category": "Electronics", "amount": 2500, "region": "North", "customerAge": 34},
+  {"date": "2023-01-02", "category": "Clothing", "amount": 1200, "region": "South", "customerAge": 28},
+  {"date": "2023-01-03", "category": "Food", "amount": 800, "region": "East", "customerAge": 45},
+  {"date": "2023-01-04", "category": "Electronics", "amount": 3200, "region": "West", "customerAge": 39},
+  {"date": "2023-01-05", "category": "Furniture", "amount": 4500, "region": "North", "customerAge": 52},
+  {"date": "2023-01-06", "category": "Clothing", "amount": 950, "region": "South", "customerAge": 24},
+  {"date": "2023-01-07", "category": "Food", "amount": 720, "region": "East", "customerAge": 31},
+  {"date": "2023-01-08", "category": "Electronics", "amount": 2800, "region": "West", "customerAge": 27},
+  {"date": "2023-01-09", "category": "Furniture", "amount": 3900, "region": "North", "customerAge": 48},
+  {"date": "2023-01-10", "category": "Clothing", "amount": 1100, "region": "South", "customerAge": 35},
+  {"date": "2023-01-11", "category": "Food", "amount": 650, "region": "East", "customerAge": 29},
+  {"date": "2023-01-12", "category": "Electronics", "amount": 4100, "region": "West", "customerAge": 42},
+  {"date": "2023-01-13", "category": "Furniture", "amount": 5200, "region": "North", "customerAge": 56},
+  {"date": "2023-01-14", "category": "Clothing", "amount": 1400, "region": "South", "customerAge": 23},
+  {"date": "2023-01-15", "category": "Food", "amount": 920, "region": "East", "customerAge": 37},
+  {"date": "2023-01-16", "category": "Electronics", "amount": 3700, "region": "West", "customerAge": 44},
+  {"date": "2023-01-17", "category": "Furniture", "amount": 4800, "region": "North", "customerAge": 51},
+  {"date": "2023-01-18", "category": "Clothing", "amount": 1050, "region": "South", "customerAge": 26},
+  {"date": "2023-01-19", "category": "Food", "amount": 780, "region": "East", "customerAge": 33},
+  {"date": "2023-01-20", "category": "Electronics", "amount": 3100, "region": "West", "customerAge": 41}
+]
