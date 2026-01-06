@@ -11,7 +11,8 @@ const SidebarContainer = styled.div`
   
   @media (max-width: 768px) {
     position: fixed;
-    transform: ${({ isOpen }) => isOpen ? 'translateX(0)' : 'translateX(-100%)'};
+    transform: ${({ $isOpen }) =>
+      $isOpen ? 'translateX(0)' : 'translateX(-100%)'};
     z-index: 999;
   }
 `;
@@ -47,7 +48,7 @@ const NavLink = styled(Link)`
 `;
 
 const Overlay = styled.div`
-  display: ${({ isOpen }) => isOpen ? 'block' : 'none'};
+  display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
   position: fixed;
   top: 0;
   left: 0;
@@ -76,21 +77,23 @@ const charts = [
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   return (
     <>
-      <SidebarContainer isOpen={isOpen}>
+      <SidebarContainer $isOpen={isOpen}>
         <SidebarHeader>
           <Logo>D3.js Charts</Logo>
         </SidebarHeader>
+
         <NavMenu>
-          {charts.map((chart, index) => (
-            <NavItem key={index}>
-              <NavLink to={chart.path} onClick={() => toggleSidebar()}>
+          {charts.map(chart => (
+            <NavItem key={chart.path}>
+              <NavLink to={chart.path} onClick={toggleSidebar}>
                 {chart.name}
               </NavLink>
             </NavItem>
           ))}
         </NavMenu>
       </SidebarContainer>
-      <Overlay isOpen={isOpen} onClick={toggleSidebar} />
+
+      <Overlay $isOpen={isOpen} onClick={toggleSidebar} />
     </>
   );
 };

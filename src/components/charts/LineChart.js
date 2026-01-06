@@ -192,11 +192,12 @@ const LineChart = ({ data }) => {
         
         focus.select('.tooltip-circle-cases')
           .attr('cx', x(d.date))
-          .attr('cy', y1(d.total_cases));
-        
+          .attr('cy', y1(d.total_cases || 0));
+
         focus.select('.tooltip-circle-deaths')
           .attr('cx', x(d.date))
-          .attr('cy', y2(d.total_deaths));
+          .attr('cy', y2(d.total_deaths || 0));
+
         
         tooltip
           .style('opacity', 1)

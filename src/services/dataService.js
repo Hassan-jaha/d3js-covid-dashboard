@@ -1,103 +1,118 @@
 import * as d3 from 'd3';
 
-// Update this constant to match your CSV filename
 const COVID_DATA_FILENAME = 'covid-data.csv';
 const COVID_DATA_PATH = `/data/${COVID_DATA_FILENAME}`;
 
-// Main function to fetch COVID data
+const parseDate = d3.timeParse('%Y-%m-%d');
+
+// ========================
+// Fetch & clean data
+// ========================
 export const fetchCovidData = async () => {
   try {
-    const data = await d3.csv(COVID_DATA_PATH);
-    return data.map(d => ({
-      ...d,
-      date: new Date(d.date),
-      total_cases: d.total_cases ? +d.total_cases : 0,
-      new_cases: d.new_cases ? +d.new_cases : 0,
-      total_deaths: d.total_deaths ? +d.total_deaths : 0,
-      new_deaths: d.new_deaths ? +d.new_deaths : 0,
-      reproduction_rate: d.reproduction_rate ? +d.reproduction_rate : 0,
-      icu_patients: d.icu_patients ? +d.icu_patients : 0,
-      hosp_patients: d.hosp_patients ? +d.hosp_patients : 0,
-      total_vaccinations: d.total_vaccinations ? +d.total_vaccinations : 0,
-      people_vaccinated: d.people_vaccinated ? +d.people_vaccinated : 0,
-      people_fully_vaccinated: d.people_fully_vaccinated ? +d.people_fully_vaccinated : 0,
-      population: d.population ? +d.population : 0
-    }));
+    const rawData = await d3.csv(COVID_DATA_PATH);
+
+    return rawData
+      .map(d => {
+        const date = parseDate(d.date);
+        if (!date) return null;
+
+        return {
+          ...d,
+          date,
+          location: d.location,
+          continent: d.continent,
+          total_cases: +d.total_cases || 0,
+          new_cases: +d.new_cases || 0,
+          total_deaths: +d.total_deaths || 0,
+          new_deaths: +d.new_deaths || 0,
+          people_vaccinated: +d.people_vaccinated || 0,
+          population: +d.population || 0
+        };
+      })
+      .filter(Boolean);
   } catch (error) {
-    console.error("Error loading COVID data:", error);
+    console.error('Error loading COVID data:', error);
     return [];
   }
 };
 
-// Helper function to get latest data for each country
+// ========================
+// Latest data per country
+// ========================
 export const getLatestCountryData = (data) => {
-  const countryMap = new Map();
-  
+  const map = new Map();
+
   data.forEach(d => {
-    if (!countryMap.has(d.location) || new Date(d.date) > new Date(countryMap.get(d.location).date)) {
-      countryMap.set(d.location, d);
+    if (!map.has(d.location) || d.date > map.get(d.location).date) {
+      map.set(d.location, d);
     }
   });
-  
-  return Array.from(countryMap.values());
+
+  return Array.from(map.values()).filter(d => d.continent);
 };
 
-// Helper function to get data for top N countries by metric
+// ========================
+// Top N countries by metric
+// ========================
 export const getTopCountriesByMetric = (data, metric, n = 10) => {
-  const latestData = getLatestCountryData(data);
-  
-  return latestData
-    .filter(d => d[metric] > 0 && d.continent) // Filter out continents and invalid data
+  return getLatestCountryData(data)
+    .filter(d => d[metric] > 0)
     .sort((a, b) => b[metric] - a[metric])
     .slice(0, n);
 };
 
-// Helper function to aggregate data by continent
+// ========================
+// Aggregate by continent
+// ========================
 export const getDataByContinent = (data) => {
-  const latestData = getLatestCountryData(data);
-  
-  // Group by continent
-  const continents = d3.group(
-    latestData.filter(d => d.continent), // Filter out items without continent
+  const grouped = d3.group(
+    getLatestCountryData(data),
     d => d.continent
   );
-  
-  // Aggregate metrics for each continent
-  return Array.from(continents, ([continent, countries]) => ({
+
+  return Array.from(grouped, ([continent, values]) => ({
     continent,
-    total_cases: d3.sum(countries, d => d.total_cases),
-    total_deaths: d3.sum(countries, d => d.total_deaths),
-    people_vaccinated: d3.sum(countries, d => d.people_vaccinated)
+    total_cases: d3.sum(values, d => d.total_cases),
+    total_deaths: d3.sum(values, d => d.total_deaths),
+    people_vaccinated: d3.sum(values, d => d.people_vaccinated)
   }));
 };
 
-// Helper function to get time series data for a specific country
-export const getCountryTimeSeries = (data, countryName) => {
+// ========================
+// Country time series
+// ========================
+export const getCountryTimeSeries = (data, country) => {
   return data
-    .filter(d => d.location === countryName)
+    .filter(d => d.location === country)
     .sort((a, b) => a.date - b.date);
 };
 
-// Helper function to get global time series
+// ========================
+// Global time series
+// ========================
 export const getGlobalTimeSeries = (data) => {
-  // Group by date
-  const groupedByDate = d3.group(data, d => d.date.toISOString().split('T')[0]);
-  
-  // Calculate global totals per date
-  return Array.from(groupedByDate, ([dateString, entries]) => ({
-    date: new Date(dateString),
-    new_cases: d3.sum(entries, d => d.new_cases || 0),
-    new_deaths: d3.sum(entries, d => d.new_deaths || 0),
-    total_cases: d3.sum(entries, d => d.new_cases || 0),  // We'll accumulate this later
-    total_deaths: d3.sum(entries, d => d.new_deaths || 0) // We'll accumulate this later
-  }))
-  .sort((a, b) => a.date - b.date)
-  // Calculate running totals
-  .map((entry, i, arr) => {
-    if (i > 0) {
-      entry.total_cases = arr[i-1].total_cases + entry.new_cases;
-      entry.total_deaths = arr[i-1].total_deaths + entry.new_deaths;
-    }
-    return entry;
-  });
+  const grouped = d3.group(
+    data,
+    d => d3.timeFormat('%Y-%m-%d')(d.date)
+  );
+
+  let totalCases = 0;
+  let totalDeaths = 0;
+
+  return Array.from(grouped, ([dateStr, values]) => {
+    const newCases = d3.sum(values, d => d.new_cases);
+    const newDeaths = d3.sum(values, d => d.new_deaths);
+
+    totalCases += newCases;
+    totalDeaths += newDeaths;
+
+    return {
+      date: new Date(dateStr),
+      new_cases: newCases,
+      new_deaths: newDeaths,
+      total_cases: totalCases,
+      total_deaths: totalDeaths
+    };
+  }).sort((a, b) => a.date - b.date);
 };

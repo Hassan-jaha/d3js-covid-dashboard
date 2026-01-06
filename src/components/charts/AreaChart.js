@@ -155,7 +155,12 @@ const AreaChart = ({ data, country }) => {
             <strong>Date: ${d3.timeFormat('%B %d, %Y')(d.date)}</strong><br>
             Total Cases: ${formatNumber(d.total_cases || 0)}<br>
             Total Deaths: ${formatNumber(d.total_deaths || 0)}<br>
-            Case Fatality Rate: ${((d.total_deaths / d.total_cases) * 100).toFixed(2)}%
+            Case Fatality Rate: ${
+              d.total_cases
+                ? ((d.total_deaths / d.total_cases) * 100).toFixed(2)
+                : '0.00'
+            }%
+
           `);
       });
 
